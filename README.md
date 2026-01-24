@@ -29,7 +29,7 @@ Publish your Obsidian markdown files directly to your blog via GitHub API.
 1. Go to Settings > Blog Publisher
 2. Enter your GitHub Personal Access Token (needs `repo` permission)
 3. Enter your repository name (e.g., `username/username.github.io`)
-4. Set the branch (default: `main`)
+4. Set the branch (default: `master`)
 5. Set the posts path (default: `posts`)
 6. Add your categories
 
