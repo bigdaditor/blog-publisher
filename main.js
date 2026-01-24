@@ -3,7 +3,7 @@ const obsidian = require('obsidian');
 const DEFAULT_SETTINGS = {
     githubToken: '',
     repository: '',
-    branch: 'main',
+    branch: 'master',
     postsPath: 'posts',
     categories: ['Tech', 'Life', 'Review'],
     useCategoryFolders: true
