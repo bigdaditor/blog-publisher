@@ -3,7 +3,7 @@
   "name": "Blog Publisher",
   "version": "1.1.0",
   "minAppVersion": "0.15.0",
-  "description": "Publish Obsidian markdown files directly to blog via GitHub API",
+  "description": "Publish markdown files directly to blog via GitHub API.",
   "author": "bigdaditor",
   "authorUrl": "https://github.com/bigdaditor",
   "isDesktopOnly": true
