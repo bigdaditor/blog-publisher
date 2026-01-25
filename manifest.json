@@ -1,9 +1,9 @@
 {
   "id": "blog-publisher",
   "name": "Blog Publisher",
-  "version": "1.1.0",
+  "version": "1.4.0",
   "minAppVersion": "0.15.0",
-  "description": "Publish markdown files directly to blog via GitHub API.",
+  "description": "Publish markdown files as HTML using marked.js directly to blog via GitHub API.",
   "author": "bigdaditor",
   "authorUrl": "https://github.com/bigdaditor",
   "isDesktopOnly": true

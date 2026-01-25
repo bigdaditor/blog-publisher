@@ -9,6 +9,57 @@ const DEFAULT_SETTINGS = {
     useCategoryFolders: true
 };
 
+// CDN URLs for marked.js and highlight.js (same as post.html)
+const MARKED_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js';
+const HLJS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+
+// Cache for loaded libraries
+let markedLib = null;
+let hljsLib = null;
+
+// Load script from CDN
+async function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        // Check if already loaded
+        const existingScript = document.querySelector(`script[src="${url}"]`);
+        if (existingScript) {
+            resolve();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = url;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Failed to load ${url}`));
+        document.head.appendChild(script);
+    });
+}
+
+// Initialize marked and highlight.js
+async function initMarkdownLibs() {
+    if (markedLib && hljsLib) return { marked: markedLib, hljs: hljsLib };
+
+    await loadScript(HLJS_CDN);
+    await loadScript(MARKED_CDN);
+
+    markedLib = window.marked;
+    hljsLib = window.hljs;
+
+    // Configure marked with highlight.js (same as post.html)
+    markedLib.setOptions({
+        highlight: function(code, lang) {
+            if (lang && hljsLib.getLanguage(lang)) {
+                return hljsLib.highlight(code, { language: lang }).value;
+            }
+            return hljsLib.highlightAuto(code).value;
+        },
+        gfm: true,
+        breaks: false
+    });
+
+    return { marked: markedLib, hljs: hljsLib };
+}
+
 class PublishModal extends obsidian.Modal {
     constructor(app, plugin, file, content) {
         super(app);
@@ -75,7 +126,7 @@ class PublishModal extends obsidian.Modal {
         const filenameSpan = preview.createEl('code');
 
         const updatePreview = () => {
-            const filename = `${this.plugin.slugify(this.filename)}.md`;
+            const filename = `${this.plugin.slugify(this.filename)}.html`;
             let path;
             if (this.plugin.settings.useCategoryFolders && this.selectedCategories.length > 0) {
                 path = `${this.plugin.settings.postsPath}/${this.selectedCategories[0]}/${filename}`;
@@ -103,7 +154,7 @@ class PublishModal extends obsidian.Modal {
         try {
             new obsidian.Notice('Publishing...');
 
-            const filename = `${this.plugin.slugify(this.filename)}.md`;
+            const filename = `${this.plugin.slugify(this.filename)}.html`;
 
             // Build filepath with optional category folder
             let filepath;
@@ -114,8 +165,69 @@ class PublishModal extends obsidian.Modal {
                 filepath = `${this.plugin.settings.postsPath}/${filename}`;
             }
 
-            // Upload original content as-is
-            await this.plugin.pushToGitHub(filepath, this.content, `Publish: ${this.filename}`);
+            // Load and use marked.js (same as post.html)
+            const { marked } = await initMarkdownLibs();
+            const htmlContent = marked.parse(this.content);
+
+            // Build full HTML (same structure as post.html)
+            const fullHtml = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${this.filename} - bigdaditor's blog</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- GitHub Markdown CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-light.min.css">
+    <!-- Highlight.js Theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 0;
+        }
+        .markdown-body pre {
+            background-color: #f6f8fa;
+        }
+        .markdown-body table {
+            display: table;
+            width: 100%;
+        }
+        .markdown-body blockquote {
+            border-left: 4px solid #d0d7de;
+            padding-left: 1em;
+            color: #656d76;
+        }
+        article {
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="/">bigdaditor's blog</a></h1>
+        <nav>
+            <a href="https://github.com/bigdaditor">GitHub</a>
+        </nav>
+    </header>
+
+    <main>
+        <a href="/" class="back-link">← 목록으로</a>
+        <article id="content" class="markdown-body">
+${htmlContent}
+        </article>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 bigdaditor</p>
+    </footer>
+</body>
+</html>`;
+
+            await this.plugin.pushToGitHub(filepath, fullHtml, `Publish: ${this.filename}`);
 
             new obsidian.Notice(`Published: ${filename}`);
             this.close();
