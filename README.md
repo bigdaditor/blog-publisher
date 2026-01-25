@@ -1,10 +1,12 @@
 # Blog Publisher for Obsidian
 
-Publish your Obsidian markdown files directly to your blog via GitHub API.
+Publish your Obsidian markdown files as HTML directly to your blog via GitHub API.
 
 ## Features
 
-- Upload markdown files as-is (no conversion)
+- Convert markdown to HTML using marked.js
+- Syntax highlighting with highlight.js
+- GitHub-flavored markdown support
 - Organize posts by category folders
 - Manage categories in settings
 - Simple one-click publishing
@@ -41,9 +43,16 @@ Publish your Obsidian markdown files directly to your blog via GitHub API.
 4. Select a category (optional)
 5. Click "Publish"
 
-Your file will be uploaded to:
-- `posts/Category/filename.md` (if category selected)
-- `posts/filename.md` (if no category)
+Your file will be uploaded as HTML to:
+- `posts/Category/filename.html` (if category selected)
+- `posts/filename.html` (if no category)
+
+## Rendering
+
+This plugin uses the same libraries as the blog viewer:
+- [marked.js](https://marked.js.org/) v12.0.0 for markdown parsing
+- [highlight.js](https://highlightjs.org/) v11.9.0 for code syntax highlighting
+- [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) for styling
 
 ## GitHub Token
 
