@@ -9,6 +9,8 @@ Publish your Obsidian markdown files as HTML directly to your blog via GitHub AP
 - GitHub-flavored markdown support
 - Organize posts by category folders
 - Manage categories in settings
+- Customizable post branding (blog name, GitHub profile link, footer owner)
+- Smart branding defaults based on repository owner
 - Simple one-click publishing
 
 ## Installation
@@ -33,7 +35,12 @@ Publish your Obsidian markdown files as HTML directly to your blog via GitHub AP
 3. Enter your repository name (e.g., `username/username.github.io`)
 4. Set the branch (default: `master`)
 5. Set the posts path (default: `posts`)
-6. Add your categories
+6. (Optional) Set branding fields:
+   - Blog Name
+   - GitHub Profile URL
+   - Footer Owner
+7. Add your categories
+8. Choose whether to use category folders
 
 ## Usage
 
@@ -46,6 +53,18 @@ Publish your Obsidian markdown files as HTML directly to your blog via GitHub AP
 Your file will be uploaded as HTML to:
 - `posts/Category/filename.html` (if category selected)
 - `posts/filename.html` (if no category)
+
+## Branding Behavior
+
+Published HTML uses the branding settings in the plugin:
+- `Blog Name`: used in the `<title>` and page header
+- `GitHub Profile URL`: used in the header GitHub link
+- `Footer Owner`: used in footer copyright text
+
+If you leave branding fields empty, defaults are inferred from your repository owner:
+- Blog Name: `{owner}'s blog`
+- GitHub Profile URL: `https://github.com/{owner}`
+- Footer Owner: `{owner}`
 
 ## Rendering
 
