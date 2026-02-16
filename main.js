@@ -6,7 +6,10 @@ const DEFAULT_SETTINGS = {
     branch: 'master',
     postsPath: 'posts',
     categories: ['Tech', 'Life', 'Review'],
-    useCategoryFolders: true
+    useCategoryFolders: true,
+    blogName: '',
+    githubProfileUrl: '',
+    footerOwner: ''
 };
 
 // CDN URLs for marked.js and highlight.js (same as post.html)
@@ -155,6 +158,11 @@ class PublishModal extends obsidian.Modal {
             new obsidian.Notice('Publishing...');
 
             const filename = `${this.plugin.slugify(this.filename)}.html`;
+            const displayFilename = this.plugin.escapeHtml(this.filename);
+            const blogName = this.plugin.escapeHtml(this.plugin.getBlogName());
+            const githubProfileUrl = this.plugin.escapeHtml(this.plugin.getGithubProfileUrl());
+            const footerOwner = this.plugin.escapeHtml(this.plugin.getFooterOwner());
+            const currentYear = new Date().getFullYear();
 
             // Build filepath with optional category folder
             let filepath;
@@ -175,7 +183,7 @@ class PublishModal extends obsidian.Modal {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${this.filename} - bigdaditor's blog</title>
+    <title>${displayFilename} - ${blogName}</title>
     <link rel="stylesheet" href="/css/style.css">
     <!-- GitHub Markdown CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-light.min.css">
@@ -208,9 +216,9 @@ class PublishModal extends obsidian.Modal {
 </head>
 <body>
     <header>
-        <h1><a href="/">bigdaditor's blog</a></h1>
+        <h1><a href="/">${blogName}</a></h1>
         <nav>
-            <a href="https://github.com/bigdaditor">GitHub</a>
+            <a href="${githubProfileUrl}">GitHub</a>
         </nav>
     </header>
 
@@ -222,7 +230,7 @@ ${htmlContent}
     </main>
 
     <footer>
-        <p>&copy; 2026 bigdaditor</p>
+        <p>&copy; ${currentYear} ${footerOwner}</p>
     </footer>
 </body>
 </html>`;
@@ -365,6 +373,46 @@ class BlogPublisherPlugin extends obsidian.Plugin {
             .replace(/^-+|-+$/g, '');
     }
 
+    getRepositoryOwner() {
+        if (!this.settings.repository) return '';
+        return this.settings.repository.split('/')[0]?.trim() || '';
+    }
+
+    getBlogName() {
+        if (this.settings.blogName?.trim()) {
+            return this.settings.blogName.trim();
+        }
+
+        const owner = this.getRepositoryOwner();
+        return owner ? `${owner}'s blog` : 'My Blog';
+    }
+
+    getGithubProfileUrl() {
+        if (this.settings.githubProfileUrl?.trim()) {
+            return this.settings.githubProfileUrl.trim();
+        }
+
+        const owner = this.getRepositoryOwner();
+        return owner ? `https://github.com/${owner}` : 'https://github.com';
+    }
+
+    getFooterOwner() {
+        if (this.settings.footerOwner?.trim()) {
+            return this.settings.footerOwner.trim();
+        }
+
+        return this.getRepositoryOwner() || this.getBlogName();
+    }
+
+    escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     async pushToGitHub(filepath, content, message) {
         const { githubToken, repository, branch } = this.settings;
         const [owner, repo] = repository.split('/');
@@ -486,6 +534,41 @@ class BlogPublisherSettingTab extends obsidian.PluginSettingTab {
                 .setValue(this.plugin.settings.postsPath)
                 .onChange(async (value) => {
                     this.plugin.settings.postsPath = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        containerEl.createEl('h3', { text: 'Branding' });
+
+        new obsidian.Setting(containerEl)
+            .setName('Blog Name')
+            .setDesc('Used in post title and header (default: repository owner based)')
+            .addText(text => text
+                .setPlaceholder("username's blog")
+                .setValue(this.plugin.settings.blogName)
+                .onChange(async (value) => {
+                    this.plugin.settings.blogName = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new obsidian.Setting(containerEl)
+            .setName('GitHub Profile URL')
+            .setDesc('Header GitHub link (default: https://github.com/{owner})')
+            .addText(text => text
+                .setPlaceholder('https://github.com/username')
+                .setValue(this.plugin.settings.githubProfileUrl)
+                .onChange(async (value) => {
+                    this.plugin.settings.githubProfileUrl = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new obsidian.Setting(containerEl)
+            .setName('Footer Owner')
+            .setDesc('Footer owner text (default: repository owner)')
+            .addText(text => text
+                .setPlaceholder('Your Name')
+                .setValue(this.plugin.settings.footerOwner)
+                .onChange(async (value) => {
+                    this.plugin.settings.footerOwner = value;
                     await this.plugin.saveSettings();
                 }));
 
