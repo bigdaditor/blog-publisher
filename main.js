@@ -158,7 +158,7 @@ class PublishModal extends obsidian.Modal {
             new obsidian.Notice('Publishing...');
 
             const filename = `${this.plugin.slugify(this.filename)}.html`;
-            const displayFilename = this.plugin.escapeHtml(this.filename);
+            const postTitle = this.plugin.escapeHtml(this.file.basename);
             const blogName = this.plugin.escapeHtml(this.plugin.getBlogName());
             const githubProfileUrl = this.plugin.escapeHtml(this.plugin.getGithubProfileUrl());
             const footerOwner = this.plugin.escapeHtml(this.plugin.getFooterOwner());
@@ -183,7 +183,7 @@ class PublishModal extends obsidian.Modal {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${displayFilename} - ${blogName}</title>
+    <title>${postTitle} - ${blogName}</title>
     <link rel="stylesheet" href="/css/style.css">
     <!-- GitHub Markdown CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-light.min.css">
@@ -212,11 +212,21 @@ class PublishModal extends obsidian.Modal {
         article {
             line-height: 1.8;
         }
+        .site-title {
+            margin: 0;
+        }
+        .site-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .post-title {
+            margin: 0 0 24px;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1><a href="/">${blogName}</a></h1>
+        <p class="site-title"><a href="/">${blogName}</a></p>
         <nav>
             <a href="${githubProfileUrl}">GitHub</a>
         </nav>
@@ -225,7 +235,8 @@ class PublishModal extends obsidian.Modal {
     <main>
         <a href="/" class="back-link">← 목록으로</a>
         <article id="content" class="markdown-body">
-${htmlContent}
+            <h1 class="post-title">${postTitle}</h1>
+            ${htmlContent}
         </article>
     </main>
 
@@ -541,7 +552,7 @@ class BlogPublisherSettingTab extends obsidian.PluginSettingTab {
 
         new obsidian.Setting(containerEl)
             .setName('Blog Name')
-            .setDesc('Used in post title and header (default: repository owner based)')
+            .setDesc('Used in the browser title suffix and site header label (default: repository owner based)')
             .addText(text => text
                 .setPlaceholder("username's blog")
                 .setValue(this.plugin.settings.blogName)

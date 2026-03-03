@@ -57,9 +57,11 @@ Your file will be uploaded as HTML to:
 ## Branding Behavior
 
 Published HTML uses the branding settings in the plugin:
-- `Blog Name`: used in the `<title>` and page header
+- `Blog Name`: used in the `<title>` suffix and page header label
 - `GitHub Profile URL`: used in the header GitHub link
 - `Footer Owner`: used in footer copyright text
+
+The published post title is taken from the Obsidian note's `file.basename`.
 
 If you leave branding fields empty, defaults are inferred from your repository owner:
 - Blog Name: `{owner}'s blog`
